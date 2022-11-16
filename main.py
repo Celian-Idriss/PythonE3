@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     file = pd.read_xml("standard_rating_list.xml")
     #créé un histogramme avec plotly express
-    fig = px.histogram(file, x="rating", nbins=18)
+    fig = px.histogram(file, x="rating", nbins=20)
 
     app.title = 'Chess Dashboard'
     app.layout = html.Div(
