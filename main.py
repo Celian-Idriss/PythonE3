@@ -15,6 +15,15 @@ if __name__ == '__main__':
     file = pd.read_xml("standard_rating_list.xml")
     #créé un histogramme avec plotly express
     fig = px.histogram(file, x="rating", nbins=20)
+    country_data = px.data.gapminder()
+    plan = px.scatter_geo(  
+            country_data,
+            locations = 'iso_alpha',
+            color = 'continent',
+            hover_name = "country" ,  # colonne ajoutée aux informations de survol 
+            size = "pop" ,  # taille de 
+            opacity = .8,
+    ) 
 
     app.title = 'Chess Dashboard'
     app.layout = html.Div(
@@ -25,7 +34,13 @@ if __name__ == '__main__':
             id='graph1',
             figure=fig
         ),
+        dcc.Graph(
+            id='plan',
+            figure=plan
+        ),
     ]
     )
+
+    
 
     app.run_server(debug=True) # (8)
