@@ -21,22 +21,27 @@ if __name__ == '__main__':
     #créé un histogramme avec plotly express
     fig = px.histogram(file, x="rating", nbins=20)
     country_data = px.data.gapminder()
-    plan = px.scatter_geo(  
-            country_data,
-            locations = 'iso_alpha',
-            color = 'continent',
-            hover_name = "country" ,  # colonne ajoutée aux informations de survol 
-            size = "sum" ,  # taille de
-            opacity = .8,
-    ) 
+
+    #Création d'un dataframe avec deux colonnes (contry et nbr) qui pour chaque pays compte le nombre de joueurs qu'il y a
+    new_file = file.groupby(['country']).sum().reset_index() 
+
+
+    plan = px.choropleth(new_file, 
+                            locations='country', 
+                            color='sum',
+                           labels={'sum':'number of players'},
+                           projection='orthographic',
+                           title="Players Repartition",
+                          )
 
     #créé un tableau
     #supprime les colones inutile
     file_sample = file.drop(['sum','fideid','w_title','o_title','foa_title','games','k','flag'], axis=1)
+
     #tri les valeurs par rating de manière décroissante
     file_sample = file_sample.sort_values(by=['rating'], ascending=False)
     file_sample = file_sample[0:25]
-    fig2 =  ff.create_table(file_sample)
+    fig2 =  ff.create_table(file_sample) 
 
     #créé un camembert avec la somme des sexes
     fig3 = px.pie(file, values='sum', title='', names='sex')
@@ -59,6 +64,7 @@ if __name__ == '__main__':
             id='plan',
             figure=plan
         ),
+        dcc.Graph(
             id='graph2',
             figure=fig2
         ),
@@ -71,6 +77,7 @@ if __name__ == '__main__':
             figure=fig4
         )
     ]
-    )
+)
+    
 
     app.run_server(debug=True) # (8)
