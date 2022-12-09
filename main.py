@@ -22,6 +22,7 @@ if __name__ == '__main__':
     fig = px.histogram(file, x="rating", nbins=20)
     country_data = px.data.gapminder()
 
+
     #Objet pour la carte 
     carte = file.groupby("country   ")
     print(carte.head())
@@ -33,15 +34,29 @@ if __name__ == '__main__':
             color="sum",
             color_continuous_scale = px.colors.sequential.Plasma,
             hover_name="country"
-    ) 
+    )
+
+    #Création d'un dataframe avec deux colonnes (contry et nbr) qui pour chaque pays compte le nombre de joueurs qu'il y a
+    new_file = file.groupby(['country']).sum().reset_index() 
+
+
+    plan = px.choropleth(new_file, 
+                            locations='country', 
+                            color='sum',
+                           labels={'sum':'number of players'},
+                           projection='orthographic',
+                           title="Players Repartition",
+                          )
+
 
     #créé un tableau
     #supprime les colones inutile
     file_sample = file.drop(['sum','fideid','w_title','o_title','foa_title','games','k','flag'], axis=1)
+
     #tri les valeurs par rating de manière décroissante
     file_sample = file_sample.sort_values(by=['rating'], ascending=False)
     file_sample = file_sample[0:25]
-    fig2 =  ff.create_table(file_sample)
+    fig2 =  ff.create_table(file_sample) 
 
     #créé un camembert avec la somme des sexes
     fig3 = px.pie(file, values='sum', title='', names='sex')
@@ -53,6 +68,7 @@ if __name__ == '__main__':
 
     app.title = 'Chess Dashboard'
     app.layout = html.Div(
+
         children=[
             html.H1(children=f'Chess Dashboard',
                 style={'textAlign': 'center', 'color': '#7FDBFF'}),
