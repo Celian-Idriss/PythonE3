@@ -21,13 +21,18 @@ if __name__ == '__main__':
     #créé un histogramme avec plotly express
     fig = px.histogram(file, x="rating", nbins=20)
     country_data = px.data.gapminder()
-    plan = px.scatter_geo(  
-            country_data,
-            locations = 'iso_alpha',
-            color = 'continent',
-            hover_name = "country" ,  # colonne ajoutée aux informations de survol 
-            size = "sum" ,  # taille de
-            opacity = .8,
+
+    #Objet pour la carte 
+    carte = file.groupby("country   ")
+    print(carte.head())
+
+    #Création de la care
+    plan = px.choropleth(
+            file,
+            locations='country',
+            color="sum",
+            color_continuous_scale = px.colors.sequential.Plasma,
+            hover_name="country"
     ) 
 
     #créé un tableau
@@ -44,33 +49,34 @@ if __name__ == '__main__':
     #supprime les valeurs null de la collone title
     fileForTitle = file[file['title'].notna()]
     #créé un camembert avec la somme des titres mais exclu les valeurs null
-    fig4 = px.pie(fileForTitle, values='sum', title='', names='title')
+    fig4 = px.pie(fileForTitle, values='iso_num', title='', names='title')
 
     app.title = 'Chess Dashboard'
     app.layout = html.Div(
-    children=[
-        html.H1(children=f'Chess Dashboard',
-            style={'textAlign': 'center', 'color': '#7FDBFF'}),
-        dcc.Graph(
-            id='graph1',
-            figure=fig
-        ),
-        dcc.Graph(
-            id='plan',
-            figure=plan
-        ),
-            id='graph2',
-            figure=fig2
-        ),
-        dcc.Graph(
-            id='graph3',
-            figure=fig3
-        ),
-        dcc.Graph(
-            id='graph4',
-            figure=fig4
-        )
-    ]
+        children=[
+            html.H1(children=f'Chess Dashboard',
+                style={'textAlign': 'center', 'color': '#7FDBFF'}),
+            dcc.Graph(
+                id='graph1',
+                figure=fig
+            ),
+            dcc.Graph(
+                id='plan',
+                figure=plan
+            ),
+            dcc.Graph(
+                id='graph2',
+                figure=fig2
+            ),
+            dcc.Graph(
+                id='graph3',
+                figure=fig3
+            ),
+            dcc.Graph(
+                id='graph4',
+                figure=fig4
+            )
+        ]
     )
 
     app.run_server(debug=True) # (8)
