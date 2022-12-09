@@ -53,6 +53,14 @@ if __name__ == '__main__':
     #créé un camembert avec la somme des titres mais exclu les valeurs null
     fig4 = px.pie(fileForTitle, values='sum', title='', names='title')
 
+    fileBirtday = file[file['birthday'].notna()].sort_values(by=['birthday'], ascending=False)
+
+    #créé les options pour les différents dopdown
+    optionCountry = [{'label': i, 'value': i} for i in file['country'].unique()]
+    optionSex = [{'label': i, 'value': i} for i in file['sex'].unique()]
+    optionsTitle = [{'label': i, 'value': i} for i in fileForTitle['title'].unique()]
+    optionsAge = [{'label': i, 'value': i} for i in fileBirtday['birthday'].unique()]
+
     app.title = 'Chess Dashboard'
     app.layout = html.Div(
     children=[
@@ -66,6 +74,29 @@ if __name__ == '__main__':
             id='plan',
             figure=plan
         ),
+        #permet de rentrer un nom
+        dcc.Input(id='inputName', type='text'),
+        dcc.Dropdown(
+            id='countryDropdown',
+            options= optionCountry,
+            value=''
+        ),
+        dcc.Dropdown(
+            id='sexDropdown',
+            options= optionSex,
+            value=''
+        ),
+        dcc.Dropdown(
+            id='titleDropdown',
+            options= optionsTitle,
+            value=''
+        ),
+        dcc.Dropdown(
+            id='DateDropdown',
+            options= optionsAge,
+            value=''
+        ),
+        html.Button('Enter', id='button'),
         dcc.Graph(
             id='graph2',
             figure=fig2
@@ -80,6 +111,12 @@ if __name__ == '__main__':
         )
     ]
 )
-    
+    #écrit idriss dans inputname quand on clique sur le bouton enter
+    @app.callback(
+        Output('inputName', 'value'),
+        Input('button', 'n_clicks')
+    )
+    def update_output(n_clicks):
+        return 'idriss' + str(n_clicks)
 
     app.run_server(debug=True) # (8)
