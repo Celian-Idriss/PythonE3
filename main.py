@@ -5,12 +5,14 @@ import plotly.figure_factory as ff
 import dash
 from dash import dcc, Input, Output, html
 from dash import html
+global file
 
 def dataFrame_to_csv(file):
     file.to_csv("test.csv", sep=';', index = False)
 
-if __name__ == '__main__':
 
+
+if __name__ == '__main__':
     app = dash.Dash(__name__)
 
     file = pd.read_csv("test.csv", sep=';')
@@ -25,13 +27,14 @@ if __name__ == '__main__':
     new_file = file.groupby(['country']).sum().reset_index() 
 
 
-    plan = px.choropleth(new_file, 
-                            locations='country', 
-                            color='sum',
-                           labels={'sum':'number of players'},
-                           projection='orthographic',
-                           title="Players Repartition",
-                          )
+    plan = px.choropleth(
+        new_file, 
+        locations='country', 
+        color='sum',
+        labels={'sum':'number of players'},
+        projection='orthographic',
+        title="Players Repartition",
+    )
 
 
     #créé un tableau
@@ -79,7 +82,7 @@ if __name__ == '__main__':
         dcc.Dropdown(
             id='countryDropdown',
             options= optionCountry,
-            value=''
+            value='USA'
         ),
         dcc.Dropdown(
             id='sexDropdown',
@@ -111,12 +114,47 @@ if __name__ == '__main__':
         )
     ]
 )
-    #écrit idriss dans inputname quand on clique sur le bouton enter
+    #met à jour le graph1 en fonction des valeurs des dropdown
     @app.callback(
-        Output('inputName', 'value'),
-        Input('button', 'n_clicks')
+        [Output('graph1', 'figure'), Output('graph2', 'figure'), Output('graph3', 'figure'), Output('graph4', 'figure'), Output('plan', 'figure')],
+        [Input('countryDropdown', 'value'), Input('sexDropdown', 'value'), Input('titleDropdown', 'value'), Input('DateDropdown', 'value')]
     )
-    def update_output(n_clicks):
-        return 'idriss' + str(n_clicks)
+    def update(country, sex, title, date):
+        global file
+        newFile = file[file['country'] == country]
+        newFile = newFile[newFile['sex'] ==  sex]
+        newFile = newFile[newFile['title'] ==  title]
+        newFile = newFile[newFile['birthday'] ==  date]
+        newFile = newFile[newFile['flag'].isnull()]
+
+        #HISTOGRAMME
+        fig = px.histogram(newFile, x="rating", nbins=20)
+
+        #TABLEAU
+        #supprime les ligne dont la valeur de la colonne flag n'est pas null
+        tableau = newFile[0:10]
+        #supprime les colones inutile
+        tableau = tableau.drop(['sum','fideid','w_title','o_title','foa_title','games','k','flag'], axis=1)
+        fig2 = ff.create_table(tableau)
+
+        #CAMEMBERT SEX
+        fig3 = px.pie(newFile, values='sum', title='', names='sex')
+
+        #CAMEMBERT TITLE
+        newFileForTitle = newFile[newFile['title'].notna()]
+        fig4 = px.pie(newFileForTitle, values='sum', title='', names='title')
+
+        #PLAN
+        new_file = newFile.groupby(['country']).sum().reset_index()
+        plan = px.choropleth(
+            new_file,
+            locations='country',
+            color='sum',
+            labels={'sum':'number of players'},
+            projection='eckert4',
+            title="Players Repartition",
+        )
+
+        return fig, fig2, fig3, fig4, plan
 
     app.run_server(debug=True) # (8)
