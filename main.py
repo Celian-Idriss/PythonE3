@@ -15,7 +15,7 @@ global file
 
 def dataFrame_to_csv(file):
     df = pd.read_xml(file)
-    #df.to_csv("Players.csv", sep=';', index = False)
+    df.to_csv("Players.csv", sep=';', index = False)
 
 #télécharge le fichier sur internet et le sauvegarde dans un fichier csv
 def download_file(url, file_name):
@@ -94,7 +94,11 @@ if __name__ == '__main__':
 
         return fig, fig2, fig3, fig4, plan
 
-    file = pd.read_csv("test.csv", sep=';')
+    #charge le fichier xml
+    file = pd.read_xml("players_list_xml_foa.xml")
+
+    #file = pd.read_csv("test.csv", sep=';')
+
     #créé un nouvelle collone sum avec pour valeur 1 (permet de créé un compteur)
     file['sum'] = 1
 
@@ -111,6 +115,7 @@ if __name__ == '__main__':
     optionSex = [{'label': i, 'value': i} for i in file['sex'].unique()]
     optionsTitle = [{'label': i, 'value': i} for i in fileForTitle['title'].unique()]
     optionsAge = [{'label': i, 'value': i} for i in fileBirtday['birthday'].unique()]
+
     #ajoute une option vide
     optionCountry.insert(0, {'label': 'ALL', 'value': 'ALL'})
     optionSex.insert(0, {'label': 'ALL', 'value': 'ALL'})
