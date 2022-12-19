@@ -1,18 +1,68 @@
 import pandas as pd
 import plotly.express as px
 import plotly.figure_factory as ff
+import urllib.request
+from zipfile import ZipFile
+from html.parser import HTMLParser
+import requests
+from bs4 import BeautifulSoup
 
 import dash
 from dash import dcc, Input, Output, html
 from dash import html
+
+
 global file
 
-def dataFrame_to_csv(file):
-    file.to_csv("test.csv", sep=';', index = False)
 
+class MyHTMLParser(HTMLParser):
+
+    def __init__(self):
+        super().__init__()
+    def handle_starttag(self, tag, attrs):
+        print("<< Trouvé balise ouvrante :", tag)
+    def handle_endtag(self, tag):
+        print(">> Trouvé balise fermante :", tag)
+    def handle_data(self, data):
+        if data.strip(): print("Trouvé contenu  :", data)
+
+def dataFrame_to_csv(file):
+    df = pd.read_xml(file)
+    #df.to_csv("Players.csv", sep=';', index = False)
+
+#télécharge le fichier sur internet et le sauvegarde dans un fichier csv
+def download_file(url, file_name):
+    import requests
+    with open(file_name, "wb") as file:
+        response = requests.get(url)
+        file.write(response.content)
 
 
 if __name__ == '__main__':
+
+    # Récupération de la page web
+    url = "https://ratings.fide.com/download.phtml"
+    page = requests.get(url)
+
+    # Analyse du code HTML avec Beautiful Soup
+    soup = BeautifulSoup(page.content, 'html.parser')
+
+    # Recherche de tous les liens vers des fichiers .zip
+    zip = ''
+    for link in soup.find_all('a', href=True):
+        if link['href'] == 'http://ratings.fide.com/download/players_list_xml.zip':
+            zip = link['href']
+            break
+
+    # Téléchargement du fichier .zip
+    urllib.request.urlretrieve(zip, "myfile.zip")
+
+    # Décompression du fichier .zip
+    with ZipFile("myfile.zip", 'r') as zipObj:
+        zipObj.extractall()
+    
+
+    
     app = dash.Dash(__name__)
 
     file = pd.read_csv("test.csv", sep=';')
@@ -157,4 +207,5 @@ if __name__ == '__main__':
 
         return fig, fig2, fig3, fig4, plan
 
-    app.run_server(debug=True) # (8)
+    app.run_server(debug=True)
+
