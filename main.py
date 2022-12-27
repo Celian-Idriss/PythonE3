@@ -149,7 +149,7 @@ if __name__ == '__main__':
         fig4 = px.pie(newFileForTitle, values='sum', title='', names='title')
 
         #PLAN
-        new_file = newFile.groupby(['country']).sum().reset_index()
+        new_file = newFile.groupby(['country']).sum(numeric_only=True).reset_index()
         plan = px.choropleth(
             new_file,
             locations='country',
@@ -186,6 +186,30 @@ if __name__ == '__main__':
     optionSex.insert(0, {'label': 'ALL', 'value': 'ALL'})
     optionsTitle.insert(0, {'label': 'ALL', 'value': 'ALL'})
     optionsAge.insert(0, {'label': 'ALL', 'value': 'ALL'})
+    
+    '''
+    #recherche d'un joueur par son nom sur chess.com
+    URL = "https://www.chess.com/member/{username}"
+
+    username = "MagnusCarlsen"
+
+    page = requests.get(URL.format(username=username))
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    # Récupération des informations du joueur
+    player_info = soup.find(class_="player-info")
+
+    # Récupération du nom du joueur
+    name = player_info.find(class_="username").text
+
+    # Récupération de la rating du joueur
+    rating = player_info.find(class_="rating").text
+
+    # Afficher les informations du joueur
+    print("Nom :", name)
+    print("Rating :", rating)
+    '''
+
 
     app.title = 'Chess Dashboard'
     app.layout = html.Div(
