@@ -112,26 +112,33 @@ if __name__ == '__main__':
 
     @app.callback(
         [Output('graph1', 'figure'), Output('graph2', 'figure'), Output('graph3', 'figure'), Output('graph4', 'figure'), Output('plan', 'figure')],
-        [Input('countryDropdown', 'value'), Input('sexDropdown', 'value'), Input('titleDropdown', 'value'), Input('DateDropdown', 'value')]
+        [Input('countryDropdown', 'value'), Input('sexDropdown', 'value'), Input('titleDropdown', 'value'), Input('DateDropdown', 'value'), Input('inputName', 'value')]
     )
-    def update(country, sex, title, date):
+
+    def update(country, sex, title, date, name):
         global file
         newFile = file
-        if country != 'ALL': newFile = file[file['country'] == country]
-        if sex != 'ALL': newFile = newFile[newFile['sex'] ==  sex]
-        if title != 'ALL': newFile = newFile[newFile['title'] ==  title]
-        if date != 'ALL': newFile = newFile[newFile['birthday'] ==  date]
-        newFile = newFile[newFile['flag'].isnull()]
+        newFile = newFile[newFile['flag'].str.contains('i', na=False) == False]
+        if country != 'ALL': 
+            newFile = new_file[new_file['country'] == country]
+        if sex != 'ALL': 
+            newFile = newFile[newFile['sex'] ==  sex]
+        if title != 'ALL': 
+            newFile = newFile[newFile['title'] ==  title]
+        if date != 'ALL': 
+            newFile = newFile[newFile['birthday'] ==  date]
+        #si name n'est pas vide on filtre le fichier avec environ le nom sans tenir compte de la casse
+        if name != '':
+            newFile = newFile[newFile['name'].str.contains(name, case=False, na=False)]
 
         #HISTOGRAMME
         fig = px.histogram(newFile, x="rating", nbins=20)
 
         #TABLEAU
-        #supprime les ligne dont la valeur de la colonne flag n'est pas null
         #trie les données par rating
         tableau = newFile.sort_values(by=['rating'], ascending=False)[0:10]
         #supprime les colones inutile
-        tableau = tableau.drop(['sum','fideid','w_title','o_title','foa_title','games','k','flag'], axis=1)
+        tableau = tableau.drop(['fideid','w_title','o_title','foa_title','games','k','flag'], axis=1)
         fig2 = ff.create_table(tableau)
 
         #CAMEMBERT SEX
@@ -166,7 +173,7 @@ if __name__ == '__main__':
     fileBirtday = file[file['birthday'].notna()].sort_values(by=['birthday'], ascending=False)
 
     #initialise les graphes à zéro
-    fig, fig2, fig3, fig4, plan = update('USA', 'M', 'GM', '1995')
+    fig, fig2, fig3, fig4, plan = update('ALL', 'ALL', 'ALL', 'ALL', '')
 
     #créé les options pour les différents dropdown
     optionCountry = [{'label': i, 'value': i} for i in file['country'].unique()]
@@ -182,54 +189,111 @@ if __name__ == '__main__':
 
     app.title = 'Chess Dashboard'
     app.layout = html.Div(
-    children=[
-        html.H1(children=f'Chess Dashboard',
-            style={'textAlign': 'center', 'color': '#7FDBFF'}),
+    children=[        
+        html.H1(
+            children='Chess Dashboard',
+            style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '32px', 'font-weight': 'bold', 'margin-bottom': '30px'}
+        ),  
+        #ajoute une dive pour graph1 et graph2 pour qu'il s'adapte à la taille de l'écran    
         dcc.Graph(
             id='graph1',
-            figure=fig
+            figure=fig,
+            style={'height': '12%', 'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}
         ),
         dcc.Graph(
             id='plan',
-            figure=plan
+            figure=plan,
+            style={'height': '12%', 'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}
+        ),           
+        html.Div(
+            style={'text-align': 'center', 'margin-bottom': '20px'}, 
+            children=[
+                html.H3(
+                    children='Name',
+                    style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '20px'}
+                ),
+                dcc.Input(
+                    id='inputName', 
+                    value='',
+                    type='text', 
+                    style={'width': '40%', 'display': 'inline-block', 'font-size': '20px'}),            
+            ]
+        ),                
+        html.Div(                    
+            style={'width': '25%', 'display': 'inline-block'},                    
+            children=[                        
+                html.H3(                            
+                    children='Country',     
+                    style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '20px'}                        
+                ),                        
+                dcc.Dropdown(                            
+                    id='countryDropdown',                             
+                    options= optionCountry,                            
+                    value='ALL',                            
+                    style={'font-size': '20px', 'padding': '10px'}                               
+                )                    
+            ]
         ),
-        #permet de rentrer un nom
-        dcc.Input(id='inputName', type='text'),
-        dcc.Dropdown(
-            id='countryDropdown',
-            options= optionCountry,
-            value='ALL'
+                html.Div(
+            style={'width': '25%', 'display': 'inline-block'},
+            children=[                        
+                html.H3(                            
+                    children='Sex',                            
+                    style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '20px'}                        
+                ),                        
+                dcc.Dropdown(                                            
+                    id='sexDropdown',                                            
+                    options= optionSex,                                            
+                    value='ALL',                                            
+                    style={'font-size': '20px', 'padding': '10px'}                                   
+                )                    
+            ]
+        ),       
+        html.Div(                    
+            style={'width': '25%', 'display': 'inline-block'},                    
+            children=[                        
+                html.H3(                            
+                    children='Title',                            
+                    style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '20px'}                        
+                ),                       
+                dcc.Dropdown(                                            
+                    id='titleDropdown',                                            
+                    options= optionsTitle,                                            
+                    value='ALL',                                            
+                    style={'font-size': '20px', 'padding': '10px'}                                    
+                    )                    
+                ]
         ),
-        dcc.Dropdown(
-            id='sexDropdown',
-            options= optionSex,
-            value='ALL'
+        html.Div(
+            style={'width': '25%', 'display': 'inline-block'},
+            children=[                        
+                html.H3(                            
+                    children='Date',                            
+                    style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '20px'}                        
+                ),                        
+                dcc.Dropdown(                            
+                    id='DateDropdown',                                            
+                    options= optionsAge,
+                    value='ALL',
+                    style={'font-size': '20px', 'padding': '10px'}
+                )
+            ]
         ),
-        dcc.Dropdown(
-            id='titleDropdown',
-            options= optionsTitle,
-            value='ALL'
-        ),
-        dcc.Dropdown(
-            id='DateDropdown',
-            options= optionsAge,
-            value='ALL'
-        ),
-        html.Button('Enter', id='button'),
         dcc.Graph(
             id='graph2',
-            figure=fig2
+            figure=fig2,
+            style={'height': '10%', 'width': '99%', 'display': 'inline-block', 'vertical-align': 'top', 'margin-right': '1%', 'margin-bottom': '20px'}
         ),
         dcc.Graph(
             id='graph3',
-            figure=fig3
+            figure=fig3,
+            style={'height': '10%', 'width': '49%', 'display': 'inline-block', 'vertical-align': 'top', 'margin-left': '1%'}
         ),
         dcc.Graph(
             id='graph4',
-            figure=fig4
-        )
+            figure=fig4,
+            style={'height': '10%', 'width': '49%', 'display': 'inline-block', 'vertical-align': 'top', 'margin-right': '1%'}
+        ),
     ]
 )
-
-    app.run_server(debug=True)
-    
+app.run_server(debug=True)
