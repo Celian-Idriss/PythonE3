@@ -9,8 +9,9 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import os
 import dash
-from dash import dcc, Input, Output, html
-from dash import html
+from dash import dcc, Input, Output, State, html
+from chessdotcom import get_player_stats
+
 
 global file
 
@@ -36,6 +37,7 @@ def conversion_date(chn):
 
 
 if __name__ == '__main__':
+    
     # Récupère la liste des fichiers du répertoire courant
     files = os.listdir(".")
 
@@ -108,11 +110,29 @@ if __name__ == '__main__':
     csv_file = [f for f in files if f.endswith(".csv")]
     
 
+    #On s'occupe de chess.com
+    def get_player_ranking(username):
+        player = get_player_stats(username).json
+
+        chn = ''
+
+        categories = ["chess_blitz", "chess_bullet", "chess_rapid"]
+        for cat in categories:
+            if cat in player['stats']:
+                chn += 'Catégorie : ' + cat
+                chn += 'Classement : ' + str(player['stats'][cat]['last']['rating'])
+                chn += 'Meilleur classement : ' + str(player['stats'][cat]['best']['rating'])
+                chn +='Nombre de parties jouées : ' + str(player['stats'][cat]['record']['win'] + player['stats'][cat]['record']['loss'] + player['stats'][cat]['record']['draw'])
+                chn += "ratio d'activité : " + str(player['stats'][cat]['record']['win']) + 'V / ' + str(player['stats'][cat]['record']['loss']) + 'D / ' + str(player['stats'][cat]['record']['draw']) + 'N'
+                chn += "Pourcentage de victoires : " + str(round(player['stats'][cat]['record']['win'] / (player['stats'][cat]['record']['win'] + player['stats'][cat]['record']['loss'] + player['stats'][cat]['record']['draw']) * 100, 2)) + "%"
+        
+        return chn.replace('\n', '<br>')
+    
     app = dash.Dash(__name__)
 
     @app.callback(
         [Output('graph1', 'figure'), Output('graph2', 'figure'), Output('graph3', 'figure'), Output('graph4', 'figure'), Output('plan', 'figure')],
-        [Input('countryDropdown', 'value'), Input('sexDropdown', 'value'), Input('titleDropdown', 'value'), Input('DateDropdown', 'value'), Input('inputName', 'value')]
+        [Input('countryDropdown', 'value'), Input('sexDropdown', 'value'), Input('titleDropdown', 'value'), Input('DateDropdown', 'value'), Input('inputName', 'value')], 
     )
 
     def update(country, sex, title, date, name):
@@ -161,6 +181,20 @@ if __name__ == '__main__':
 
         return fig, fig2, fig3, fig4, plan
 
+    #callback pour le bouton de chess.com
+    @app.callback(
+        Output('output_1', 'children'),
+        Output('output_2', 'children'),   
+        Input('bouton', 'n_clicks'),
+        State('Player 1', 'value'),
+        State('Player 2', 'value'))
+
+    def update_output(nclicks, input_1, input_2):
+        if nclicks is None:
+            return '', ''
+        else:
+            return get_player_ranking(input_1), get_player_ranking(input_2)
+
     #on lit le fichier csv
     file = pd.read_csv(csv_file[0], sep=';')
 
@@ -187,29 +221,6 @@ if __name__ == '__main__':
     optionsTitle.insert(0, {'label': 'ALL', 'value': 'ALL'})
     optionsAge.insert(0, {'label': 'ALL', 'value': 'ALL'})
     
-    '''
-    #recherche d'un joueur par son nom sur chess.com
-    URL = "https://www.chess.com/member/{username}"
-
-    username = "MagnusCarlsen"
-
-    page = requests.get(URL.format(username=username))
-    soup = BeautifulSoup(page.content, "html.parser")
-
-    # Récupération des informations du joueur
-    player_info = soup.find(class_="player-info")
-
-    # Récupération du nom du joueur
-    name = player_info.find(class_="username").text
-
-    # Récupération de la rating du joueur
-    rating = player_info.find(class_="rating").text
-
-    # Afficher les informations du joueur
-    print("Nom :", name)
-    print("Rating :", rating)
-    '''
-
 
     app.title = 'Chess Dashboard'
     app.layout = html.Div(
@@ -258,7 +269,7 @@ if __name__ == '__main__':
                 )                    
             ]
         ),
-                html.Div(
+        html.Div(
             style={'width': '25%', 'display': 'inline-block'},
             children=[                        
                 html.H3(                            
@@ -318,6 +329,42 @@ if __name__ == '__main__':
             figure=fig4,
             style={'height': '10%', 'width': '49%', 'display': 'inline-block', 'vertical-align': 'top', 'margin-right': '1%'}
         ),
+        #tout ce qui a a voir avec le chess.com est dans une Div
+        html.Div(
+            style={'text-align': 'center', 'margin-bottom': '20px'}, 
+            children=[
+                html.H3(
+                    children='Chess.com',
+                    style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '20px'}
+                ),
+                dcc.Input(
+                    id='Player 1', 
+                    value='',
+                    type='text', 
+                    style={'font-size': '20px', 'padding': '10px', 'margin-right': '1%'}
+                ),
+                dcc.Input(
+                    id='Player 2', 
+                    value='',
+                    type='text', 
+                    style={'font-size': '20px', 'padding': '10px', 'margin-left': '1%'}
+                ),
+                html.Button(
+                    id='bouton',
+                    children='Valider',
+                    style={'margin-left': '1%'}
+                    ),
+                html.Div(
+                    id='output_1',
+                    style={'margin-top': '20px', 'white-space': 'pre-line'}
+                    ),
+                html.Div(
+                    id='output_2',
+                    style={'margin-top': '20px', 'white-space': 'pre-line'}
+                    )
+            ]
+        ),   
     ]
+    
 )
 app.run_server(debug=True)
