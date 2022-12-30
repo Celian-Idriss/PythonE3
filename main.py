@@ -35,6 +35,11 @@ def conversion_date(chn):
     annee = int(chn[8:12])
     return datetime(annee, mois, jour)
 
+def convert_to_int(x):
+  if pd.isnull(x) or isinstance(x, str):
+    return x
+  return int(x)
+
 
 if __name__ == '__main__':
     
@@ -112,21 +117,30 @@ if __name__ == '__main__':
 
     #On s'occupe de chess.com
     def get_player_ranking(username):
-        player = get_player_stats(username).json
+        try:
+            player = get_player_stats(username).json
+        except:
+            return ""
 
         chn = ''
 
         categories = ["chess_blitz", "chess_bullet", "chess_rapid"]
         for cat in categories:
             if cat in player['stats']:
-                chn += 'Catégorie : ' + cat
-                chn += 'Classement : ' + str(player['stats'][cat]['last']['rating'])
-                chn += 'Meilleur classement : ' + str(player['stats'][cat]['best']['rating'])
-                chn +='Nombre de parties jouées : ' + str(player['stats'][cat]['record']['win'] + player['stats'][cat]['record']['loss'] + player['stats'][cat]['record']['draw'])
-                chn += "ratio d'activité : " + str(player['stats'][cat]['record']['win']) + 'V / ' + str(player['stats'][cat]['record']['loss']) + 'D / ' + str(player['stats'][cat]['record']['draw']) + 'N'
-                chn += "Pourcentage de victoires : " + str(round(player['stats'][cat]['record']['win'] / (player['stats'][cat]['record']['win'] + player['stats'][cat]['record']['loss'] + player['stats'][cat]['record']['draw']) * 100, 2)) + "%"
-        
-        return chn.replace('\n', '<br>')
+                chn += 'Catégorie : ' + cat + '\n'
+                chn += 'Classement : ' + str(player['stats'][cat]['last']['rating']) + '\n'
+                chn += 'Meilleur classement : ' + str(player['stats'][cat]['best']['rating']) + '\n'
+                chn +='Nombre de parties jouées : ' + str(player['stats'][cat]['record']['win'] + player['stats'][cat]['record']['loss'] + player['stats'][cat]['record']['draw']) + '\n'
+                chn += "ratio d'activité : " + str(player['stats'][cat]['record']['win']) + 'V / ' + str(player['stats'][cat]['record']['loss']) + 'D / ' + str(player['stats'][cat]['record']['draw']) + 'N' + '\n'
+                chn += "Pourcentage de victoires : " + str(round(player['stats'][cat]['record']['win'] / (player['stats'][cat]['record']['win'] + player['stats'][cat]['record']['loss'] + player['stats'][cat]['record']['draw']) * 100, 2)) + "%" + '\n'
+            else:
+                chn += 'Catégorie : ' + cat + '\n'
+                chn += 'Classement : ' + 'Pas de classement' + '\n'
+                chn += 'Meilleur classement : ' + 'Pas de classement' + '\n'
+                chn +='Nombre de parties jouées : ' + 'Pas de classement' + '\n'
+                chn += "ratio d'activité : " + 'Pas de classement' + '\n'
+                chn += "Pourcentage de victoires : " + 'Pas de classement' + '\n'    
+        return chn
     
     app = dash.Dash(__name__)
 
@@ -154,13 +168,6 @@ if __name__ == '__main__':
         #HISTOGRAMME
         fig = px.histogram(newFile, x="rating", nbins=20)
 
-        #TABLEAU
-        #trie les données par rating
-        tableau = newFile.sort_values(by=['rating'], ascending=False)[0:10]
-        #supprime les colones inutile
-        tableau = tableau.drop(['fideid','w_title','o_title','foa_title','games','k','flag'], axis=1)
-        fig2 = ff.create_table(tableau)
-
         #CAMEMBERT SEX
         fig3 = px.pie(newFile, values='sum', title='', names='sex')
 
@@ -179,6 +186,17 @@ if __name__ == '__main__':
             title="Players Repartition",
         )
 
+        #TABLEAU
+        #trie les données par rating
+        tableau = newFile.sort_values(by=['rating'], ascending=False)[0:10]
+        #supprime les colones inutile
+        tableau = tableau.drop(['fideid','w_title','o_title','foa_title','games','k','flag', 'sum'], axis=1)
+
+        tableau = tableau.applymap(convert_to_int)
+
+        fig2 = ff.create_table(tableau)
+
+
         return fig, fig2, fig3, fig4, plan
 
     #callback pour le bouton de chess.com
@@ -189,11 +207,8 @@ if __name__ == '__main__':
         State('Player 1', 'value'),
         State('Player 2', 'value'))
 
-    def update_output(nclicks, input_1, input_2):
-        if nclicks is None:
-            return '', ''
-        else:
-            return get_player_ranking(input_1), get_player_ranking(input_2)
+    def update_output(n_clicks, input_1, input_2):
+        return get_player_ranking(input_1), get_player_ranking(input_2)
 
     #on lit le fichier csv
     file = pd.read_csv(csv_file[0], sep=';')
@@ -353,15 +368,15 @@ if __name__ == '__main__':
                     id='bouton',
                     children='Valider',
                     style={'margin-left': '1%'}
-                    ),
+                ),
                 html.Div(
                     id='output_1',
                     style={'margin-top': '20px', 'white-space': 'pre-line'}
-                    ),
+                ),
                 html.Div(
                     id='output_2',
-                    style={'margin-top': '20px', 'white-space': 'pre-line'}
-                    )
+                    style={'margin-top': '20px', 'white-space': 'pre-line', 'display': 'inline-block',}
+                )
             ]
         ),   
     ]
