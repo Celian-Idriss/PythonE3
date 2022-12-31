@@ -3,15 +3,12 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import urllib.request
 import zipfile
-from html.parser import HTMLParser
-import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import os
 import dash
 from dash import dcc, Input, Output, State, html
 from chessdotcom import get_player_stats
-
 
 global file
 
@@ -242,8 +239,15 @@ if __name__ == '__main__':
     children=[        
         html.H1(
             children='Chess Dashboard',
-            style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '32px', 'font-weight': 'bold', 'margin-bottom': '30px'}
-        ),  
+            style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '64px', 'font-weight': 'bold', 'margin-bottom': '30px'}
+        ),
+        html.P(
+            style={'textAlign': 'center', 'font-size': '25px', 'margin-bottom': '30px'}, 
+            children=[
+            "Welcome to our dashboard! Here are some information about chess :", html.Br(),
+            "Chess is a strategy game played by two players on a board of 64 squares, made up of 32 white squares and 32 black squares. Each player has 16 pieces, including a king, queen, two rooks, two bishops, two knights, and eight pawns. The white pieces are played by one player and the black pieces by the other. Players take turns moving one of their pieces. The goal of the game is to put the opponent's king in a position of checkmate, where the king is in danger and there is no way to protect it. Chess is considered a sport in many countries, including France."
+            ]    
+        ),
         #ajoute une dive pour graph1 et graph2 pour qu'il s'adapte à la taille de l'écran    
         dcc.Graph(
             id='graph1',
