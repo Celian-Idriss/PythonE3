@@ -57,6 +57,8 @@ Nous avons plusieurs améliorations que l'on aurait aimé faire mais nous n’av
 
 - Pour améliorer notre projet, nous pourrions aussi ajouter du CSS afin de faire une interface plus belle
 
+- Nous aurions voulu mettre un petit logo sur la page internet
+
 
 
 IV) Les problèmes rencontré : 
@@ -68,12 +70,18 @@ Comme dans tous les projets, nous avons rencontrés des problèmes plus ou moins
 - Le CSS en python à été compliqué à mettre en place.
 
 
-V) La structure du code :
+V) Developper Guide :
 
-Le code est relativement court et ne comporte pas énormement de partie.
-La premiere parite contient plusieurs fonctions qui sont 
+Le code n'est pas très long mais on a découpé celui ci en plusieurs module afin de le rentre le plus simple possible.
+
+Nous avons un fichier function.py qui contient la grande majorité des fonctions (le fichier contient 6 fonctions). Ces fonctions sont des fonctions plutot simple mais pour rnetre le fichier main.py plus lisible, on a décidé de les mettres à part.
+Nous avons le fichier date_fichier.py qui contient une unique fonction qui est assez longue. Cette fonction permet de rechercher si il existe un fichier xml plus récent sur le site de FIDE. Si tel est le cas, alors il le télécharge, le remplace et crée un nouveau CSV afin de manipuler les données plus simplement.
+Enfin, nous avons le fichier main.py qui contient le main comme son nom l'indique et qui construit le Dashboard ainsi que tous les graphiques et les autres objects qui y seront dessus.
 
 
-VI) Conclusion :
+VI) User Guide : 
+
+
+VII) Conclusion :
 
 Nous avons donc réalisé le travail demandé en respectant les consignes. Nous aons aimé faire ce projet car même si nous connaissons bien python, il nous a permi de voir une nouvelle facette de ce language.

@@ -1,3 +1,7 @@
 pandas
-bs4
 plotly
+dash
+re
+chess.com
+urllib
+bs4
