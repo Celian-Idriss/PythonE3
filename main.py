@@ -40,7 +40,6 @@ def convert_to_int(x):
 
 def update_output(input):
     children = []
-    print('input: ', input)
     # Utilisez une regex pour extraire les informations de la chaîne de caractères
     categories = re.findall(r'Catégorie : (.*?)\n', input)
     rankings = re.findall(r'Classement : (.*?)\n', input)
@@ -48,12 +47,6 @@ def update_output(input):
     num_games_played = re.findall(r'Nombre de parties jouées : (.*?)\n', input)
     activity_ratios = re.findall(r"ratio d'activité : (.*?)\n", input)
     win_percentages = re.findall(r'Pourcentage de victoires : (.*?)\n', input)
-    print(categories)
-    print(rankings)
-    print(best_rankings)
-    print(num_games_played)
-    print(activity_ratios)
-    print(win_percentages)
 
     for i in range(len(categories)):
         category = categories[i]
@@ -168,11 +161,11 @@ if __name__ == '__main__':
                 chn += "Pourcentage de victoires : " + str(round(player['stats'][cat]['record']['win'] / (player['stats'][cat]['record']['win'] + player['stats'][cat]['record']['loss'] + player['stats'][cat]['record']['draw']) * 100, 2)) + "%" + '\n'
             else:
                 chn += 'Catégorie : ' + cat + '\n'
-                chn += 'Classement : ' + 'Pas de classement' + '\n'
-                chn += 'Meilleur classement : ' + 'Pas de classement' + '\n'
-                chn +='Nombre de parties jouées : ' + 'Pas de classement' + '\n'
-                chn += "ratio d'activité : " + 'Pas de classement' + '\n'
-                chn += "Pourcentage de victoires : " + 'Pas de classement' + '\n'    
+                chn += 'Classement : ' + 'No ranking' + '\n'
+                chn += 'Meilleur classement : ' + 'No ranking' + '\n'
+                chn +='Nombre de parties jouées : ' + 'No ranking' + '\n'
+                chn += "ratio d'activité : " + 'No ranking' + '\n'
+                chn += "Pourcentage de victoires : " + 'No ranking' + '\n'    
         return chn
     
     app = dash.Dash(__name__)
@@ -200,14 +193,15 @@ if __name__ == '__main__':
         #HISTOGRAMME
         #on filtre le fichier pour ne garder que les lignes qui ont un rating non null et différent de 0
         hist = newFile[newFile['rating'].notna() & (newFile['rating'] != 0)]
-        fig = px.histogram(hist, x="rating", nbins=20)
+        fig = px.histogram(hist, x="rating", nbins=20, title='Rating repartition')
+        
 
         #CAMEMBERT SEX
-        fig3 = px.pie(newFile, values='sum', title='', names='sex')
+        fig3 = px.pie(newFile, values='sum', title='Gender distribution', names='sex')
 
         #CAMEMBERT TITLE
         newFileForTitle = newFile[newFile['title'].notna()]
-        fig4 = px.pie(newFileForTitle, values='sum', title='', names='title')
+        fig4 = px.pie(newFileForTitle, values='sum', title='Title Repartiton', names='title')
 
         #PLAN
         new_file = newFile.groupby(['country']).sum(numeric_only=True).reset_index()
@@ -217,7 +211,7 @@ if __name__ == '__main__':
             color='sum',
             labels={'sum':'number of players'},
             projection='eckert4',
-            title="Players Repartition",
+            title="Players Repartition by Country",
         )
 
         #TABLEAU
@@ -229,7 +223,6 @@ if __name__ == '__main__':
         tableau = tableau.applymap(convert_to_int)
 
         fig2 = ff.create_table(tableau)
-
 
         return fig, fig2, fig3, fig4, plan
 
@@ -285,19 +278,15 @@ if __name__ == '__main__':
             style={'textAlign': 'center', 'font-size': '25px', 'margin-bottom': '30px'}, 
             children=[
             "Welcome to our dashboard! Here are some information about chess :", html.Br(),
-            "Chess is a strategy game played by two players on a board of 64 squares, made up of 32 white squares and 32 black squares. Each player has 16 pieces, including a king, queen, two rooks, two bishops, two knights, and eight pawns. The white pieces are played by one player and the black pieces by the other. Players take turns moving one of their pieces. The goal of the game is to put the opponent's king in a position of checkmate, where the king is in danger and there is no way to protect it. Chess is considered a sport in many countries, including France."
+            "Chess is a strategy game played by two players on a board of 64 squares, made up of 32 white squares and 32 black squares. Each player has 16 pieces, including a king, queen, two rooks, two bishops, two knights, and eight pawns. The white pieces are played by one player and the black pieces by the other. Players take turns moving one of their pieces. The goal of the game is to put the opponent's king in a position of checkmate, where the king is in danger and there is no way to protect it. Chess is considered a sport in many countries, including France.",
+            html.Br(), html.Br(), "The goal of this dashboard is to allow you to visualize the data from the International Chess Federation (FIDE) through various charts and graphs."
             ]    
         ),
-        #ajoute une dive pour graph1 et graph2 pour qu'il s'adapte à la taille de l'écran    
-        dcc.Graph(
-            id='graph1',
-            figure=fig,
-            style={'height': '12%', 'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}
-        ),
-        dcc.Graph(
-            id='plan',
-            figure=plan,
-            style={'height': '12%', 'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}
+        html.P(
+            style={'textAlign': 'center', 'font-size': '25px', 'margin-bottom': '30px'}, 
+            children=[
+            html.Br(), 'You can change the display options if you want : '
+            ]    
         ),
         html.Div(
             style={'text-align': 'center', 'margin-bottom': '20px'}, 
@@ -382,7 +371,13 @@ if __name__ == '__main__':
             id='plan',
             figure=plan,
             style={'height': '12%', 'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}
-        ),           
+        ),
+        html.P(
+            style={'textAlign': 'center', 'font-size': '25px', 'margin-bottom': '30px'},
+            children=[
+            html.Br(), '10 best players by rating : '
+            ]
+        ),        
         dcc.Graph(
             id='graph2',
             figure=fig2,
@@ -401,7 +396,13 @@ if __name__ == '__main__':
         #tout ce qui a a voir avec le chess.com est dans une Div
         html.H3(
             children='Chess.com',
-            style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '20px'}
+            style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '50px', 'font-weight': 'bold', 'margin-bottom': '20px'}
+        ),
+        html.P(
+            style={'textAlign': 'center', 'font-size': '25px', 'margin-bottom': '30px'}, 
+            children=[
+            html.Br(), 'Enter the name of two players to compare their statistics on chess.com : '
+            ]    
         ),
         html.Div(
             style={'text-align': 'center', 'margin-bottom': '20px'},
