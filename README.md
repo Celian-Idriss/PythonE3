@@ -1,7 +1,7 @@
 Idriss BACHI
 Célian VALANTIN
 
-## Rapport sur les Échecs:  
+## Rapport sur les Échecs:  
 
 Objectifs : L'Objectif du projet est de choisir un sujet au choix et le traiter en utilisant des données publiques Open Data, accessible et non modifiées. Tout cela en utilisant au moins les modules dash et pandas.
 
@@ -10,13 +10,11 @@ Notre sujet : Nous avons décidé de travailler sur les échecs.
 Pourquoi les échecs ? : C'est un sujet qui nous parle étant donné que nous aimons y jouer et en recherchant des donnés sur internet, nous nous sommes rendu compte que nous pouvions avoir assez de données pour travailler car la fédération internationale des échecs (FIDE) répertorie plutôt bien les données.
 
 
-
 I) La recherche des données : 
 
 Pour faire le projet, nous avons donc cherché des données publique sur internet. Comme dit précédemment, le FIDE nous a beaucoup aidé car elle met à jour chaque mois les données sous forme de fichier XML ou txt. Nous avons donc utilisé les fichiers XML à notre disposition.
 
 De plus pour la seconde partie de notre projet, nous avons voulu utilisé l'API de chess.com. Chess.com est un célébre site ou l'on peut jouer en ligne aux échecs contre des joueurs du monde entier avec tout un système de classement. De plus, de nombreux tournoi y sont organisé avec les meilleurs joueurs du monde. Après quelques recherches, nous avons vu que python propose une bibliothèque (chessdotcom) qui permet de se connecter directement à l'API de chess.com. Nous nous en sommes donc servi pour notre projet
-
 
 
 II) Notre projet :
@@ -48,7 +46,6 @@ Notre projet est découpé en 2 Grandes partie :
     Cette partie est elle aussi dynamique.
 
 
-
 III) Les piste d'améliorations :
 
 Nous avons plusieurs améliorations que l'on aurait aimé faire mais nous n’avons pas eu le temps pour les faire.
@@ -60,7 +57,6 @@ Nous avons plusieurs améliorations que l'on aurait aimé faire mais nous n’av
 - Nous aurions voulu mettre un petit logo sur la page internet
 
 
-
 IV) Les problèmes rencontré : 
 
 Comme dans tous les projets, nous avons rencontrés des problèmes plus ou moins important : 
@@ -69,19 +65,14 @@ Comme dans tous les projets, nous avons rencontrés des problèmes plus ou moins
 
 - Le CSS en python à été compliqué à mettre en place.
 
-
 V) Developper Guide :
 
 Le code n'est pas très long mais on a découpé celui ci en plusieurs module afin de le rentre le plus simple possible.
 
-Nous avons un fichier function.py qui contient la grande majorité des fonctions (le fichier contient 6 fonctions). Ces fonctions sont des fonctions plutot simple mais pour rnetre le fichier main.py plus lisible, on a décidé de les mettres à part.
+Nous avons un fichier function.py qui contient la grande majorité des fonctions (le fichier contient 6 fonctions). Ces fonctions sont des fonctions plutôt simple mais pour rentre le fichier main.py plus lisible, on a décidé de les mettre à part.
 Nous avons le fichier date_fichier.py qui contient une unique fonction qui est assez longue. Cette fonction permet de rechercher si il existe un fichier xml plus récent sur le site de FIDE. Si tel est le cas, alors il le télécharge, le remplace et crée un nouveau CSV afin de manipuler les données plus simplement.
 Enfin, nous avons le fichier main.py qui contient le main comme son nom l'indique et qui construit le Dashboard ainsi que tous les graphiques et les autres objects qui y seront dessus.
 
-
-VI) User Guide : 
-
-
 VII) Conclusion :
 
-Nous avons donc réalisé le travail demandé en respectant les consignes. Nous aons aimé faire ce projet car même si nous connaissons bien python, il nous a permi de voir une nouvelle facette de ce language.
+Nous avons donc réalisé le travail demandé en respectant les consignes. Nous avons aimé faire ce projet car même si nous connaissons bien python, il nous a permis de voir une nouvelle facette de ce langage.
