@@ -40,7 +40,6 @@ def update_output(input, colorStart):
     win_percentages = re.findall(r'Pourcentage de victoires : (.*?)\n', input)
     # Créez une variable pour stocker l'état de la couleur de fond (b58863 ou f0d9b5)
     background_color = colorStart
-    print(categories)
     for i in range(len(categories)):
         category = categories[i]
         ranking = rankings[i]
