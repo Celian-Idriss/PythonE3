@@ -29,16 +29,18 @@ def convert_to_int(x):
         return x
     return int(x)
 
-def update_output(input):
+def update_output(input, colorStart):
     children = []
     # Utilisez une regex pour extraire les informations de la chaîne de caractères
-    categories = re.findall(r'Catégorie : (.?)\n', input)
-    rankings = re.findall(r'Classement : (.?)\n', input)
-    best_rankings = re.findall(r'Meilleur classement : (.?)\n', input)
-    num_games_played = re.findall(r'Nombre de parties jouées : (.?)\n', input)
-    activity_ratios = re.findall(r"ratio d'activité : (.?)\n", input)
-    win_percentages = re.findall(r'Pourcentage de victoires : (.?)\n', input)
-
+    categories = re.findall(r'Catégorie : (.*?)\n', input)
+    rankings = re.findall(r'Classement : (.*?)\n', input)
+    best_rankings = re.findall(r'Meilleur classement : (.*?)\n', input)
+    num_games_played = re.findall(r'Nombre de parties jouées : (.*?)\n', input)
+    activity_ratios = re.findall(r"ratio d'activité : (.*?)\n", input)
+    win_percentages = re.findall(r'Pourcentage de victoires : (.*?)\n', input)
+    # Créez une variable pour stocker l'état de la couleur de fond (b58863 ou f0d9b5)
+    background_color = colorStart
+    print(categories)
     for i in range(len(categories)):
         category = categories[i]
         ranking = rankings[i]
@@ -46,20 +48,30 @@ def update_output(input):
         num_games = num_games_played[i]
         activity_ratio = activity_ratios[i]
         win_percentage = win_percentages[i]
-        # Créez un dictionnaire de styles pour chaque type d'élément
+        # Créez un dictionnaire de styles pour chaque type d'élément en utilisant la variable background_color
         h3_style = {'textAlign': 'center', 'color': '#7fa650 ', 'fontSize': '24px', 'fontWeight': 'bold', 'marginBottom': '20px'}
         p_style = {'textAlign': 'center','color': '#ffffff', 'fontSize': '20px', 'fontWeight': 'bold', 'marginBottom': '10px'}
 
-        # Ajoutez les éléments à la liste children en utilisant les styles définis
-        children.append(html.H3(f'Category: {category}', style=h3_style))
-        children.append(html.P(f'Ranking: {ranking}', style=p_style))
-        children.append(html.P(f'Best ranking: {best_ranking}', style=p_style))
-        children.append(html.P(f'Number of games played: {num_games}', style=p_style))
-        children.append(html.P(f'Activity ratio: {activity_ratio}', style=p_style))
-        children.append(html.P(f'Win percentage: {win_percentage}', style=p_style))
+        children.append(
+            html.Div(
+                style={'backgroundColor': background_color},
+                children=[
+                    html.H3(f'Category: {category}', style=h3_style),
+                    html.P(f'Ranking: {ranking}', style=p_style),
+                    html.P(f'Best ranking: {best_ranking}', style=p_style),
+                    html.P(f'Number of games played: {num_games}', style=p_style),
+                    html.P(f'Activity ratio: {activity_ratio}', style=p_style),
+                    html.P(f'Win percentage: {win_percentage}', style=p_style)
+                ]
+            )
+        )
+        # Inversez la valeur de background_color pour l'itération suivante
+        if background_color == '#b58863':
+            background_color = '#f0d9b5'
+        else:
+            background_color = '#b58863'
 
     return children
-
 
 #On s'occupe de chess.com
 def get_player_ranking(username):

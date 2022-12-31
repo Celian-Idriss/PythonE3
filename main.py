@@ -5,6 +5,7 @@ import os
 import dash
 from dash import dcc, Input, Output, html
 from date_fichier import *
+import re
 
 global file
 
@@ -78,6 +79,7 @@ if __name__ == '__main__':
         tableau = tableau.applymap(convert_to_int)
 
         fig2 = ff.create_table(tableau)
+        fig2.update_layout(paper_bgcolor='#f0d9b5', font_color='#FFFFFF', plot_bgcolor='#b58863', title_font_color='#7fa650', title_x=0.5)
 
         return fig, fig2, fig3, fig4, plan
 
@@ -88,11 +90,8 @@ if __name__ == '__main__':
         output=[Output('output_1', 'children'), Output('output_2', 'children')],
     )
     def update_chesscom(input_1, input_2):
-        output1_children = update_output(get_player_ranking(input_1))
-       
-        output2_children = update_output(get_player_ranking(input_2))
-        print(output1_children + 'balbalbla')
-        print(output2_children + 'jkqldfjqkdf   ')
+        output1_children = update_output(get_player_ranking(input_1),'#f0d9b5')
+        output2_children = update_output(get_player_ranking(input_2),'#b58863')
         return output1_children, output2_children
 
     output1_children = []
@@ -234,7 +233,7 @@ if __name__ == '__main__':
                 style={'height': '12%', 'width': '48%', 'display': 'inline-block', 'vertical-align': 'top', 'margin-right': '2%'}
             ),
             html.P(
-                style={'textAlign': 'center', 'font-size': '25px', 'margin-bottom': '30px', 'color': '#ffffff'},
+                style={'textAlign': 'center', 'font-size': '25px', 'margin-bottom': '30px', 'color': '#7fa650'},
                 children=[
                     html.Br(), '10 best players by rating : '
                 ]
@@ -272,13 +271,13 @@ if __name__ == '__main__':
                         id='Player 1', 
                         value='idrissb77',
                         type='text', 
-                        style={'width': '20%', 'display': 'inline-block', 'font-size': '20px', 'margin-right': '2%'}  
+                        style={'width': '20%', 'display': 'inline-block', 'font-size': '20px', 'margin-right': '2%', 'background-color': '#b58863'}  
                     ),
                     dcc.Input(
                         id='Player 2', 
                         value='valtozz',
                         type='text', 
-                        style={'width': '20%', 'display': 'inline-block', 'font-size': '20px'}
+                        style={'width': '20%', 'display': 'inline-block', 'font-size': '20px','background-color': '#f0d9b5'}
                     )
                 ]
             ), 
