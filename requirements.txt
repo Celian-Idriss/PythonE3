@@ -1,7 +1,6 @@
 pandas
 plotly
 dash
-re
 chess.com
-urllib
+requests
 bs4
