@@ -9,6 +9,7 @@ import os
 import dash
 from dash import dcc, Input, Output, State, html
 from chessdotcom import get_player_stats
+import re
 
 global file
 
@@ -33,10 +34,47 @@ def conversion_date(chn):
     return datetime(annee, mois, jour)
 
 def convert_to_int(x):
-  if pd.isnull(x) or isinstance(x, str):
-    return x
-  return int(x)
+    if pd.isnull(x) or isinstance(x, str):
+        return x
+    return int(x)
 
+def update_output(input):
+    children = []
+    print('input: ', input)
+    # Utilisez une regex pour extraire les informations de la chaîne de caractères
+    categories = re.findall(r'Catégorie : (.*?)\n', input)
+    rankings = re.findall(r'Classement : (.*?)\n', input)
+    best_rankings = re.findall(r'Meilleur classement : (.*?)\n', input)
+    num_games_played = re.findall(r'Nombre de parties jouées : (.*?)\n', input)
+    activity_ratios = re.findall(r"ratio d'activité : (.*?)\n", input)
+    win_percentages = re.findall(r'Pourcentage de victoires : (.*?)\n', input)
+    print(categories)
+    print(rankings)
+    print(best_rankings)
+    print(num_games_played)
+    print(activity_ratios)
+    print(win_percentages)
+
+    for i in range(len(categories)):
+        category = categories[i]
+        ranking = rankings[i]
+        best_ranking = best_rankings[i]
+        num_games = num_games_played[i]
+        activity_ratio = activity_ratios[i]
+        win_percentage = win_percentages[i]
+        # Créez un dictionnaire de styles pour chaque type d'élément
+        h3_style = {'textAlign': 'center', 'color': '#7FDBFF', 'fontSize': '24px', 'fontWeight': 'bold', 'marginBottom': '20px'}
+        p_style = {'textAlign': 'center', 'fontSize': '20px', 'fontWeight': 'bold', 'marginBottom': '10px'}
+
+        # Ajoutez les éléments à la liste children en utilisant les styles définis
+        children.append(html.H3(f'Category: {category}', style=h3_style))
+        children.append(html.P(f'Ranking: {ranking}', style=p_style))
+        children.append(html.P(f'Best ranking: {best_ranking}', style=p_style))
+        children.append(html.P(f'Number of games played: {num_games}', style=p_style))
+        children.append(html.P(f'Activity ratio: {activity_ratio}', style=p_style))
+        children.append(html.P(f'Win percentage: {win_percentage}', style=p_style))
+
+    return children
 
 if __name__ == '__main__':
     
@@ -78,7 +116,6 @@ if __name__ == '__main__':
 
     #si la date du fichier sur le site est plus récente que celle du fichier dans le répertoire courant
     if date_nouvelle > date_courent:
-
         #on supprime le fichier csv et xml
         if xml_files != []:
             os.remove(xml_files[0])
@@ -110,7 +147,6 @@ if __name__ == '__main__':
 
     # Filtre la liste des fichiers pour ne garder que ceux qui ont l'extension .csv
     csv_file = [f for f in files if f.endswith(".csv")]
-    
 
     #On s'occupe de chess.com
     def get_player_ranking(username):
@@ -145,7 +181,6 @@ if __name__ == '__main__':
         [Output('graph1', 'figure'), Output('graph2', 'figure'), Output('graph3', 'figure'), Output('graph4', 'figure'), Output('plan', 'figure')],
         [Input('countryDropdown', 'value'), Input('sexDropdown', 'value'), Input('titleDropdown', 'value'), Input('DateDropdown', 'value'), Input('inputName', 'value')], 
     )
-
     def update(country, sex, title, date, name):
         global file
         newFile = file
@@ -163,7 +198,9 @@ if __name__ == '__main__':
             newFile = newFile[newFile['name'].str.contains(name, case=False, na=False)]
 
         #HISTOGRAMME
-        fig = px.histogram(newFile, x="rating", nbins=20)
+        #on filtre le fichier pour ne garder que les lignes qui ont un rating non null et différent de 0
+        hist = newFile[newFile['rating'].notna() & (newFile['rating'] != 0)]
+        fig = px.histogram(hist, x="rating", nbins=20)
 
         #CAMEMBERT SEX
         fig3 = px.pie(newFile, values='sum', title='', names='sex')
@@ -186,8 +223,8 @@ if __name__ == '__main__':
         #TABLEAU
         #trie les données par rating
         tableau = newFile.sort_values(by=['rating'], ascending=False)[0:10]
-        #supprime les colones inutile
-        tableau = tableau.drop(['fideid','w_title','o_title','foa_title','games','k','flag', 'sum'], axis=1)
+        #garde seulement les colonnes qui nous intéressent (name, country, rating, rapid_rating, blitz_rating, sum, sex, title, birthday)
+        tableau = tableau[['name', 'country','title', 'rating', 'rapid_rating', 'blitz_rating', 'sex', 'birthday']]
 
         tableau = tableau.applymap(convert_to_int)
 
@@ -197,15 +234,18 @@ if __name__ == '__main__':
         return fig, fig2, fig3, fig4, plan
 
     #callback pour le bouton de chess.com
-    @app.callback(
-        Output('output_1', 'children'),
-        Output('output_2', 'children'),   
-        Input('bouton', 'n_clicks'),
-        State('Player 1', 'value'),
-        State('Player 2', 'value'))
+    @app.callback( 
+        Input('Player 1', 'value'),
+        Input('Player 2', 'value'),
+        output=[Output('output_1', 'children'), Output('output_2', 'children')],
+    )
+    def update_chesscom(input_1, input_2):
+        output1_children = update_output(get_player_ranking(input_1))
+        output2_children = update_output(get_player_ranking(input_2))
+        return output1_children, output2_children
 
-    def update_output(n_clicks, input_1, input_2):
-        return get_player_ranking(input_1), get_player_ranking(input_2)
+    output1_children = []
+    output2_children = []
 
     #on lit le fichier csv
     file = pd.read_csv(csv_file[0], sep=';')
@@ -258,7 +298,7 @@ if __name__ == '__main__':
             id='plan',
             figure=plan,
             style={'height': '12%', 'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}
-        ),           
+        ),
         html.Div(
             style={'text-align': 'center', 'margin-bottom': '20px'}, 
             children=[
@@ -334,6 +374,16 @@ if __name__ == '__main__':
             ]
         ),
         dcc.Graph(
+            id='graph1',
+            figure=fig,
+            style={'height': '12%', 'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}
+        ),
+        dcc.Graph(
+            id='plan',
+            figure=plan,
+            style={'height': '12%', 'width': '50%', 'display': 'inline-block', 'vertical-align': 'top'}
+        ),           
+        dcc.Graph(
             id='graph2',
             figure=fig2,
             style={'height': '10%', 'width': '99%', 'display': 'inline-block', 'vertical-align': 'top', 'margin-right': '1%', 'margin-bottom': '20px'}
@@ -349,41 +399,37 @@ if __name__ == '__main__':
             style={'height': '10%', 'width': '49%', 'display': 'inline-block', 'vertical-align': 'top', 'margin-right': '1%'}
         ),
         #tout ce qui a a voir avec le chess.com est dans une Div
+        html.H3(
+            children='Chess.com',
+            style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '20px'}
+        ),
         html.Div(
-            style={'text-align': 'center', 'margin-bottom': '20px'}, 
+            style={'text-align': 'center', 'margin-bottom': '20px'},
             children=[
-                html.H3(
-                    children='Chess.com',
-                    style={'textAlign': 'center', 'color': '#7FDBFF', 'font-size': '24px', 'font-weight': 'bold', 'margin-bottom': '20px'}
-                ),
                 dcc.Input(
                     id='Player 1', 
-                    value='',
+                    value='idrissb77',
                     type='text', 
-                    style={'font-size': '20px', 'padding': '10px', 'margin-right': '1%'}
+                    style={'width': '20%', 'display': 'inline-block', 'font-size': '20px', 'margin-right': '2%'}  
                 ),
                 dcc.Input(
                     id='Player 2', 
-                    value='',
+                    value='valtozz',
                     type='text', 
-                    style={'font-size': '20px', 'padding': '10px', 'margin-left': '1%'}
-                ),
-                html.Button(
-                    id='bouton',
-                    children='Valider',
-                    style={'margin-left': '1%'}
-                ),
-                html.Div(
-                    id='output_1',
-                    style={'margin-top': '20px', 'white-space': 'pre-line'}
-                ),
-                html.Div(
-                    id='output_2',
-                    style={'margin-top': '20px', 'white-space': 'pre-line', 'display': 'inline-block',}
+                    style={'width': '20%', 'display': 'inline-block', 'font-size': '20px'}
                 )
             ]
-        ),   
+        ), 
+        html.Div(
+            id='output_1',
+            style={'height': '10%', 'width': '49%', 'vertical-align': 'top', 'margin-left': '1%', 'display': 'inline-block'},
+            children=output1_children
+        ),
+        html.Div(
+            id='output_2',
+            style={'height': '10%', 'width': '49%', 'vertical-align': 'top', 'margin-left': '1%', 'display': 'inline-block'},
+            children=output2_children
+        )
     ]
-    
 )
 app.run_server(debug=True)
